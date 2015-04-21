@@ -4,7 +4,7 @@ Simplify from [Butter Knife](https://github.com/JakeWharton/butterknife)
 
 ###Usage
 
-Use like `app/src/main/java/com/meican/android/smartknife/MainActivity.java`:
+Use like `app/src/main/java/com/laomo/smartknife/MainActivity.java`:
 
 ```
 public class MainActivity extends Activity implements OnClickListener, OnItemClickListener {
