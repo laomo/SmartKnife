@@ -18,7 +18,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -64,29 +63,28 @@ public class SmartKnifeProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
 
-        Map<String, BindingClass> bindMap = findAndParseTargets(env);
-        for (String key : bindMap.keySet()) {
+        Map<TypeElement, BindingClass> bindMap = findAndParseTargets(env);
+        for (TypeElement key : bindMap.keySet()) {
             BindingClass bindingClass = bindMap.get(key);
             try {
                 JavaFileObject jfo = processingEnv.getFiler().createSourceFile(
-                        bindingClass.getBinderClassFullName(),
-                        bindingClass.getTypeElement());
+                        bindingClass.getBinderClassFullName(), key);
                 Writer writer = jfo.openWriter();
                 writer.write(bindingClass.generateJavaCode());
                 writer.flush();
                 writer.close();
             } catch (IOException e) {
-                error(bindingClass.getTypeElement(), "Unable to write injector for type %s: %s",
-                        bindingClass.getTypeElement(), e.getMessage());
+                error(key, "Unable to write injector for type %s: %s",
+                        key, e.getMessage());
             }
 
         }
         return true;
     }
 
-    private Map<String, BindingClass> findAndParseTargets(RoundEnvironment env) {
+    private Map<TypeElement, BindingClass> findAndParseTargets(RoundEnvironment env) {
 
-        Map<String, BindingClass> bindMap = new HashMap<>();
+        Map<TypeElement, BindingClass> bindMap = new HashMap<>();
 
         for (Element element : env.getElementsAnnotatedWith(ViewInject.class)) {
             boolean hasError = false;
@@ -118,24 +116,20 @@ public class SmartKnifeProcessor extends AbstractProcessor {
             boolean itemClick = viewInject.itemClick();
             boolean required = isRequiredInjection(element);
 
-
-            VariableElement varElement = (VariableElement) element;
-            String fqClassName = enclosingElement.getQualifiedName().toString();
-
             PackageElement packageElement = elementUtils.getPackageOf(enclosingElement);
             String packageName = packageElement.getQualifiedName().toString();
 
             String className = getClassName(enclosingElement, packageName);
-            String fieldName = varElement.getSimpleName().toString();
-            String fieldType = varElement.asType().toString();
+            String fieldName = element.getSimpleName().toString();
+            String fieldType = element.asType().toString();
 
             if (itemClick) {
-                itemClick = isSubtypeOfType(varElement.asType(), ADAPTER_VIEW_TYPE);
+                itemClick = isSubtypeOfType(element.asType(), ADAPTER_VIEW_TYPE);
             }
-            BindingClass bindingClass = bindMap.get(fqClassName);
+            BindingClass bindingClass = bindMap.get(enclosingElement);
             if (bindingClass == null) {
-                bindingClass = new BindingClass(packageName, className, enclosingElement);
-                bindMap.put(fqClassName, bindingClass);
+                bindingClass = new BindingClass(packageName, className);
+                bindMap.put(enclosingElement, bindingClass);
             }
             bindingClass.putViewInfo(id,
                     new ViewBinding(id, fieldName, fieldType, click, itemClick, required));

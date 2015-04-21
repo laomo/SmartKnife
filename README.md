@@ -41,6 +41,17 @@ public class MainActivity extends Activity implements OnClickListener, OnItemCli
 
 }
 ```
+###Proguard
+```
+#for smartknife
+-keep class **$$ViewBinder { *; }
+-dontwarn com.laomo.inject.**
+-keepnames class * { @com.laomo.inject.ViewInject *;}
+-keepclasseswithmembernames class * {
+    @com.laomo.inject.* <fields>;
+}
+#for smartknife end
+```
 ###Develop
 Because I didn't find a way that can use both `javax annotation` and `android` package, I tried a stupid trick:
 
@@ -48,7 +59,6 @@ Because I didn't find a way that can use both `javax annotation` and `android` p
 2. copy `android.jar` to module `smartknife` libs
 
 If you have some good idea, please tell me.
-
 ###License
 ```
 Licensed under the Apache License, Version 2.0 (the "License");

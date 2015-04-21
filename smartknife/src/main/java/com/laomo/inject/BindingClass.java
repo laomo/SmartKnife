@@ -10,16 +10,13 @@ final class BindingClass {
     private String packageName;
     private String targetClassName;
     private String binderClassName;
-    private TypeElement typeElement;
 
     private Map<Integer, ViewBinding> idViewMap = new HashMap<>();
 
-    public BindingClass(String packageName, String className, TypeElement typeElement) {
+    public BindingClass(String packageName, String className) {
         this.packageName = packageName;
         this.targetClassName = className;
         this.binderClassName = className + SmartKnifeProcessor.SUFFIX;
-        this.typeElement = typeElement;
-
     }
 
     public void putViewInfo(int id, ViewBinding viewBinding) {
@@ -98,9 +95,4 @@ final class BindingClass {
         }
         builder.append("  }\n");
     }
-
-    public TypeElement getTypeElement() {
-        return typeElement;
-    }
-
 }
